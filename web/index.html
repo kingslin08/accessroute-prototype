@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AccessRoute: routes that know what the pavement is really like</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Atkinson Hyperlegible was designed by the Braille Institute for low-vision readers -->
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/theme.css">
+</head>
+<body>
+  <a class="skip" href="#find">Skip to route planner</a>
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 36 36" aria-hidden="true">
+        <rect width="36" height="36" rx="8" fill="#FFD21F"/>
+        <g fill="#10243E">
+          <circle cx="9" cy="9" r="3"/><circle cx="18" cy="9" r="3"/><circle cx="27" cy="9" r="3"/>
+          <circle cx="9" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="27" cy="18" r="3"/>
+          <circle cx="9" cy="27" r="3"/><circle cx="18" cy="27" r="3"/><circle cx="27" cy="27" r="3"/>
+        </g>
+      </svg>
+      <div>
+        <h1>AccessRoute</h1>
+        <p>Routes that know what the pavement is really like</p>
+      </div>
+    </div>
+    <div class="hero-chips" aria-hidden="true"><span>Crowd reports</span><span>Computer vision</span><span>Live re-routing</span></div>
+    <div class="clock" role="group" aria-label="Simulated clock">
+      <div class="clock-read">
+        <span>Simulated time</span>
+        <time id="clock" aria-live="polite">Loading</time>
+      </div>
+      <button type="button" data-hours="1">+1 hour</button>
+      <button type="button" data-hours="6">+6 hours</button>
+      <button type="button" data-hours="24">+1 day</button>
+      <button type="button" id="reset" class="ghost">Reset demo</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- LEFT: who, where, result -->
+    <section class="panel left" aria-label="Route planner">
+      <div class="block" id="find">
+        <h2 id="who-h">Who is walking?</h2>
+        <div class="plates" role="radiogroup" aria-labelledby="who-h" id="plates"></div>
+      </div>
+
+      <div class="block">
+        <h2>Where to?</h2>
+        <div class="field">
+          <label for="from">From</label>
+          <div class="pick">
+            <select id="from"></select>
+            <button type="button" class="small" id="pick-from" aria-pressed="false" aria-label="Pick the starting point on the map">On map</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="to">To</label>
+          <div class="pick">
+            <select id="to"></select>
+            <button type="button" class="small" id="pick-to" aria-pressed="false" aria-label="Pick the destination on the map">On map</button>
+          </div>
+        </div>
+        <button type="button" class="primary" id="go">Find accessible route</button>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Planner sections">
+        <button role="tab" id="tab-route" aria-selected="true" aria-controls="pane-route">Route</button>
+        <button role="tab" id="tab-places" aria-selected="false" aria-controls="pane-places" tabindex="-1">Places</button>
+      </div>
+      <div id="pane-route" role="tabpanel" aria-labelledby="tab-route" class="pane" aria-live="polite"></div>
+      <div id="pane-places" role="tabpanel" aria-labelledby="tab-places" class="pane" hidden></div>
+    </section>
+
+    <!-- CENTRE: map -->
+    <section class="mapwrap" id="map-region" aria-label="Map of the neighbourhood">
+      <div class="banner" id="banner" role="status" hidden>
+        <p id="banner-text"></p>
+        <button type="button" id="banner-close" aria-label="Dismiss alert">Dismiss</button>
+      </div>
+      <div class="map-tools">
+        <label class="switch"><input type="checkbox" id="compare" checked>
+          <span>Show the route a normal map would give</span></label>
+      </div>
+      <svg id="map" viewBox="-40 -34 480 468" role="img"
+           aria-label="Street map. Use the list of known barriers to inspect problems with the keyboard.">
+        <defs>
+          <pattern id="dots" width="10" height="10" patternUnits="userSpaceOnUse">
+            <circle cx="5" cy="5" r="0.9" fill="#c9d1d9"/>
+          </pattern>
+        </defs>
+        <rect x="-40" y="-34" width="480" height="468" fill="#EEF1F4"/>
+        <rect x="-40" y="-34" width="480" height="468" fill="url(#dots)" opacity=".6"/>
+        <g id="layer-blocks"></g>
+        <g id="layer-edges"></g>
+        <g id="layer-dyn"></g>
+        <g id="layer-hit"></g>
+      </svg>
+      <div class="legend" aria-label="Map key">
+        <span><i class="k k-open"></i>Clear</span>
+        <span><i class="k k-caution"></i>Caution</span>
+        <span><i class="k k-unsure"></i>Unverified report</span>
+        <span><i class="k k-blocked"></i>Blocked for you</span>
+        <span><i class="k k-route"></i>Your route</span>
+        <span><i class="k k-normal"></i>Normal map's route</span>
+        <span class="ringnote">The ring on a sign shows how sure we are.</span>
+      </div>
+    </section>
+
+    <!-- RIGHT: inspector + feed -->
+    <aside class="panel right" aria-label="Details and live updates">
+      <div class="inspector" id="inspector" aria-live="polite">
+        <h2>Street details</h2>
+        <p class="empty">Click any street on the map, or choose one from the list below, to see what is known about it and to report a problem.</p>
+      </div>
+      <div class="feedwrap">
+        <h2 id="feed-h">Live updates</h2>
+        <ol id="feed" class="feed" role="log" aria-labelledby="feed-h" aria-live="polite"></ol>
+      </div>
+    </aside>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

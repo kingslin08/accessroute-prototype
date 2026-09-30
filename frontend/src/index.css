@@ -1,0 +1,33 @@
+@import "tailwindcss";
+@layer base {
+  body {
+    background: #0f172a;
+    color: #f8fafc;
+  }
+
+  ::selection {
+    background: #fbbf24;
+    color: #0f172a;
+  }
+}
+/* Custom scrollbars for clean presentation */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* Focus indicator for keyboard accessibility */
+*:focus-visible {
+  outline: 2px solid #facc15;
+  outline-offset: 2px;
+}
